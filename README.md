@@ -1,15 +1,21 @@
 Stevedore
 =========
 
-Description
-===========
-
 The intent behind this project is to create an easy to use interface for
 running arbitrary and presumably long running distributed tasks (or jobs).  It
 also provides a framework for executing these arbitrary and distributed
 tasks built on top of the [Docker](http://www.docker.io/) containers.
 
+Central Job Manager
+===================
+
 ![overview](waas-cjm.jpg "stevedore")
+
+* Web UI: Web interface for humans wrapping the REST API
+* REST API: Interface for interacting with the CJM
+* Datastore: Tracks operational data for tasks run by the CJM
+* Queue: Queue of tasks to be executed
+* Workers: Light wrapper around Docker container API
 
 How it works
 ============
