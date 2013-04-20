@@ -35,14 +35,93 @@ the time it took to execute, and the status of the execution.
 API Specification
 =================
 
-* GET /task/
+#### GET /task/ ####
+Returns a set of available tasks
 
-* POST /task/
+##### Response #####
 
-* POST /task/{id}/
+Field | Description
+:-----|------------
+Id    | unique identifier for the task
+Name  | human identifiable name. (unique, but not a key)
 
-* GET /task/{id}/
+#### POST /task/ ####
+Creates a new task in the system which becomes available to run.  When the task
+is submitted, a job is started to pull the image into the logical respoitory.
+Once complete, the task is now available for use.
 
-* GET /result/
+##### Request #####
 
-* GET /result/{id}/
+Field | Description
+:-----|------------
+repository | docker repository location (example: johncosta/redis)
+name       | human identifyable name. (unique, but not a key)
+status     |  SUBMITTED, IMPORTING, READY, ERROR
+
+##### Response #####
+
+Field   | Description
+:-------|------------
+task_id | unique identifier for the created task
+
+#### POST /task/{task_id}/ ####
+Executes the requested operation for the task.
+
+##### Operations #####
+Operation | Description
+:---------|------------
+RUN       | Executes task {times} number of times
+
+##### Request (RUN) #####
+
+Field | Description
+:-----|------------
+task_id   | id of the task to operate on
+operation | RUN
+times     | Number of times to execute
+
+##### Response (RUN) #####
+
+Field   | Description
+:-------|------------
+result_id | unique id for the results related to executed tasks
+
+#### GET /task/{task_id}/ ####
+Returns any detail related to the task
+
+#### GET /result/ ####
+Returns set of results
+
+#### GET /result/{result_id}/ ####
+Returns data associated to the result
+
+##### Response #####
+
+Field   | Description
+:-------|------------
+result_id         | id of the result
+task_id           | id of the task executed
+status            | COMPLETE, QUEUED, RUNNING, ERROR, CANCELLED, KILLED
+submitted_at      | epoch time UTC, when the tasks where submitted
+start             | epoch time UTC, when the tasks where started
+end               | epoch time UTC, when all the tasks where complete
+duration          | seconds of execution, end minus start
+
+#### GET /result/{result_id}/detail/ ####
+Returns a set of individual result details
+
+#### GET /result/{result_id}/detail/{detail_id}/ ####
+Returns the detail for the specific result detail.
+
+##### Response #####
+
+Field   | Description
+:-------|------------
+result_id         | id of the result
+detail_id         | id of the result detail
+task_id           | id of the task executed
+status            | COMPLETE, QUEUED, RUNNING, ERROR, CANCELLED, KILLED
+submitted_at      | epoch time UTC, when the tasks where submitted
+start             | epoch time UTC, when the tasks where started
+end               | epoch time UTC, when all the tasks where complete
+duration          | seconds of execution, end minus start
