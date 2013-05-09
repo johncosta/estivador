@@ -3,7 +3,7 @@ import falcon
 """ To run the application locally: python wsgi.py """
 
 # falcon.API instances are callable WSGI apps
-from stevedoreapi.resources import (
+from stevedore.api.resources import (
     TaskResource, ResultResource, ResultDetailResource)
 
 

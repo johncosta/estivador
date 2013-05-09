@@ -1,5 +1,3 @@
-import falcon
-
 from ..resources import TaskResource, ResultResource, ResultDetailResource
 
 
