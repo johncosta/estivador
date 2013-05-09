@@ -1,0 +1,7 @@
+INIT = "init"
+QUEUED = "queued"
+RUNNING = "running"
+ERROR = "error"
+CANCELLED = "canceled"
+KILLED = "killed"
+COMPLETE = "complete"

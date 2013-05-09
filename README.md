@@ -52,17 +52,17 @@ Once complete, the task is now available for use.
 
 ##### Request #####
 
-Field | Description
-:-----|------------
-repository | docker repository location (example: johncosta/redis)
-name       | human identifyable name. (unique, but not a key)
-status     |  SUBMITTED, IMPORTING, READY, ERROR
+Field | Description | Notes
+:-----|-------------|--------
+repository | docker repository location (example: johncosta/redis) | required
+name       | human identifiable name. (unique, but not a key)      | default: repository value
 
 ##### Response #####
 
 Field   | Description
 :-------|------------
 task_id | unique identifier for the created task
+status  |  SUBMITTED, IMPORTING, READY, ERROR
 
 #### POST /task/{task_id}/ ####
 Executes the requested operation for the task.
@@ -74,11 +74,11 @@ RUN       | Executes task {times} number of times
 
 ##### Request (RUN) #####
 
-Field | Description
-:-----|------------
-task_id   | id of the task to operate on
-operation | RUN
-times     | Number of times to execute
+Field | Description | Notes
+:-----|-------------|-------
+task_id   | id of the task to operate on | Required as part of the post id
+operation | RUN | (Optional) Default is RUN
+times     | Number of times to execute | (Optional) Default is 1
 
 ##### Response (RUN) #####
 
