@@ -84,17 +84,20 @@ class TaskResource(GenericResource):
         if task_id:
             self.logger.debug("Looking for Task with id: {0}".format(task_id))
             task = Task.find_by_id(task_id)
-            resp.body = task.serialize()
+            if task:
+                resp.body = task.serialize()
+                resp.status = falcon.HTTP_200
+            else:
+                resp.status = falcon.HTTP_404
         else:
             self.logger.debug("Looking for all Tasks")
             tasks.extend(Task.find_all())
             resp.body = Task.serialize_tasks(tasks)
             self.logger.debug("Found tasks: {0}".format(tasks))
-
-        if len(tasks) > 0:
-            resp.status = falcon.HTTP_200
-        else:
-            resp.status = falcon.HTTP_404
+            if len(tasks) > 0:
+                resp.status = falcon.HTTP_200
+            else:
+                resp.status = falcon.HTTP_404
 
         return resp
 

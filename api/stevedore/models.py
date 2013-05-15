@@ -3,6 +3,7 @@ import time
 
 from sqlalchemy import Column, Integer, String, ForeignKey, func, create_engine
 from sqlalchemy.orm import Session, sessionmaker
+from sqlalchemy.orm.exc import NoResultFound
 from sqlalchemy.ext.declarative import declarative_base
 
 from . import constants
@@ -33,11 +34,11 @@ class Task(Base):
             Session = sessionmaker(bind=engine)
             session = Session()
             task = session.query(Task).filter_by(repository=repository).one()
-            if not task:
-                task = Task(repository=repository, name=name)
-                session.add(task)
-                session.commit()
-                created = True
+        except NoResultFound, e:
+            task = Task(repository=repository, name=name)
+            session.add(task)
+            session.commit()
+            created = True
         except Exception, e:
             # todo use a logger
             print e
