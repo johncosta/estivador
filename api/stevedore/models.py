@@ -1,8 +1,7 @@
 import json
 import time
 
-from sqlalchemy import Column, Integer, String, ForeignKey, func, create_engine
-from sqlalchemy.orm import Session, sessionmaker
+from sqlalchemy import Column, Integer, String, ForeignKey, func
 from sqlalchemy.orm.exc import NoResultFound
 from sqlalchemy.ext.declarative import declarative_base
 
@@ -20,19 +19,14 @@ class Task(Base):
     name = Column(String(100), nullable=True)
 
     @classmethod
-    def create_unique_task(cls, repository, name, task=None, created=False):
+    def create_unique_task(cls, session, repository, name, task=None,
+                           created=False):
         """ Creates a task, unique by repository.
 
         :returns task:  Created task
         :returns created: True is a task is created, false otherwise
         """
         try:
-            engine = create_engine('sqlite:///stevedore.db', echo=False,
-                                   pool_recycle=3600, echo_pool=True)
-            # Create all tables stored in this metadata.
-            Base.metadata.create_all(engine)
-            Session = sessionmaker(bind=engine)
-            session = Session()
             task = session.query(Task).filter_by(repository=repository).one()
         except NoResultFound, e:
             task = Task(repository=repository, name=name)
@@ -42,60 +36,36 @@ class Task(Base):
         except Exception, e:
             # todo use a logger
             print e
-        finally:
-            try:
-                session.close()
-            except Exception, e:
-                pass
+            raise e
 
         return task, created
 
     @classmethod
-    def find_by_id(cls, task_id, task=None):
+    def find_by_id(cls, session, task_id, task=None):
         """
         :returns task: Returns task for task_id
         """
         try:
-            engine = create_engine('sqlite:///stevedore.db', echo=False,
-                                   pool_recycle=3600, echo_pool=True)
-            # Create all tables stored in this metadata.
-            Base.metadata.create_all(engine)
-            Session = sessionmaker(bind=engine)
-            session = Session()
             task = session.query(Task).filter_by(id=task_id).one()
         except Exception, e:
             # todo use a logger
             print e
-        finally:
-            try:
-                session.close()
-            except Exception, e:
-                pass
+            raise e
 
         return task
 
     @classmethod
-    def find_all(cls):
+    def find_all(cls, session):
         """
         :returns task: Returns task for task_id
         """
         tasks = []
         try:
-            engine = create_engine('sqlite:///stevedore.db', echo=False,
-                                   pool_recycle=3600, echo_pool=True)
-            # Create all tables stored in this metadata.
-            Base.metadata.create_all(engine)
-            Session = sessionmaker(bind=engine)
-            session = Session()
             tasks = session.query(Task).all()
         except Exception, e:
             # todo use a logger
             print e
-        finally:
-            try:
-                session.close()
-            except Exception, e:
-                pass
+            raise e
 
         return tasks
 
@@ -112,6 +82,7 @@ class Task(Base):
     def serialize(self):
         return json.dumps(dict(id=self.id, repository=self.repository,
                                name=self.name))
+
 
 class Result(Base):
 

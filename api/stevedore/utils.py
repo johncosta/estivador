@@ -1,4 +1,8 @@
 import logging
+import config
+from models import Base
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
 
 
 LOGGING_FORMAT = '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
@@ -23,3 +27,27 @@ def configure_logger(cls, log_level=None, stream_handling=True):
         logger.addHandler(ch)
 
     return logger
+
+
+def create_db_session(database=None, database_options=None):
+
+    if not database:
+        database = config.DEFAULT_DATABASE
+    if not database_options:
+        database_options = config.DEFAULT_DATABASE_OPTIONS
+
+    # create the initial connection
+    engine = create_engine(database, **database_options)
+    # Create all tables stored in this metadata.
+    Base.metadata.create_all(engine)
+    Session = sessionmaker(bind=engine)
+    session = Session()
+    return session
+
+
+def close_db_session(session):
+    try:
+        session.close()
+    except:
+        pass
+    return

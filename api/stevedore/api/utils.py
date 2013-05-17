@@ -1,5 +1,9 @@
 import json
 import falcon
+import socket
+
+# force a 30 second read timeout
+socket.setdefaulttimeout(30)
 
 
 def _read_stream(req, logger):
@@ -15,6 +19,7 @@ def _read_stream(req, logger):
                                'Could not read the request body. Must be '
                                'them ponies again.')
     return raw_json
+
 
 def _raw_to_dict(raw_json, logger):
     try:
