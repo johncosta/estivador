@@ -4,6 +4,7 @@ import falcon.testing as testing
 from helpers import (
     TestTaskResource, TestResultResource, TestResultDetailResource)
 from stevedore.models import Task
+from stevedore import utils, config
 
 """
 These tests are based off of the tests found in test_http_method_routing.py
@@ -19,7 +20,11 @@ class TaskRoutingFixture(testing.TestBase):
         self.resource_task = TestTaskResource()
         self.api.add_route('/task/', self.resource_task)
         self.api.add_route('/task/{task_id}/', self.resource_task)
-        task, created = Task.create_unique_task("sampletask", "sampletask")
+        session = utils.create_db_session(
+            config.TEST_DATABASE, config.TEST_DATABASE_OPTIONS)
+        task, created = Task.create_unique_task(
+            session, "sampletask", "sampletask")
+        utils.close_db_session(session)
 
     def test_get(self):
         self.simulate_request('/task/')
