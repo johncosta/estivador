@@ -16,12 +16,19 @@ see https://github.com/racker/falcon/blob/master/falcon/tests/test_http_method_r
 
 class TaskRoutingFixture(testing.TestBase):
 
+    database = config.TEST_DATABASE
+    database_options = config.TEST_DATABASE_OPTIONS
+
     def before(self):
-        self.resource_task = TestTaskResource()
+        # configure the api routes
+        self.resource_task = TestTaskResource(
+            database=self.database, database_options=self.database_options)
         self.api.add_route('/task/', self.resource_task)
         self.api.add_route('/task/{task_id}/', self.resource_task)
+
+        # create any required database objects
         session = utils.create_db_session(
-            config.TEST_DATABASE, config.TEST_DATABASE_OPTIONS)
+            database=self.database, database_options=self.database_options)
         task, created = Task.create_unique_task(
             session, "sampletask", "sampletask")
         utils.close_db_session(session)
@@ -49,8 +56,12 @@ class TaskRoutingFixture(testing.TestBase):
 
 class ResultRoutingFixture(testing.TestBase):
 
+    database = config.TEST_DATABASE
+    database_options = config.TEST_DATABASE_OPTIONS
+
     def before(self):
-        self.resource_result = TestResultResource()
+        self.resource_result = TestResultResource(
+            database=self.database, database_options=self.database_options)
         self.api.add_route('/result/', self.resource_result)
         self.api.add_route('/result/{result_id}/', self.resource_result)
 
@@ -68,8 +79,12 @@ class ResultRoutingFixture(testing.TestBase):
 
 class ResultDetailRoutingFixture(testing.TestBase):
 
+    database = config.TEST_DATABASE
+    database_options = config.TEST_DATABASE_OPTIONS
+
     def before(self):
-        self.resource_detail = TestResultDetailResource()
+        self.resource_detail = TestResultDetailResource(
+            database=self.database, database_options=self.database_options)
         self.api.add_route('/result/{result_id}/detail/', self.resource_detail)
         self.api.add_route('/result/{result_id}/detail/{detail_id}/', self.resource_detail)
 

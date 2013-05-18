@@ -16,14 +16,26 @@ class GenericResource(object):
         * logging
         * database connection configuration
     """
-    def __init__(self):
+    def __init__(self, database=None, database_options=None):
+        """
+        Database configuration options can be injected to control which
+        database the application connects to.
+
+        :param database:
+        :param database_options:
+        :return:
+        """
         self.logger = utils.configure_logger(self.__class__)
+        self.database = database if database else config.DEFAULT_DATABASE
+        self.database_options = (database_options if database_options
+                                 else config.DEFAULT_DATABASE_OPTIONS)
 
 
 class TaskResource(GenericResource):
 
-    def __init__(self):
-        super(TaskResource, self).__init__()
+    def __init__(self, database=None, database_options=None):
+        super(TaskResource, self).__init__(
+            database=database, database_options=database_options)
 
         self.redis_config = config.DEFAULT
         self.q = self._create_queue()
@@ -53,12 +65,13 @@ class TaskResource(GenericResource):
 
         return resp
 
-    def _create_new_task(self, resp, repository, name):
+    def _create_new_task(self, resp, repository, name, session=None):
         """ Store a new task object """
         self.logger.debug("Creating new task for ({0}, {1})".format(
             repository, name))
         try:
-            session = utils.create_db_session()
+            session = utils.create_db_session(
+                database=self.database, database_options=self.database_options)
             task, created = Task.create_unique_task(session, repository, name)
 
             if created:
@@ -67,14 +80,15 @@ class TaskResource(GenericResource):
                 resp.status = falcon.HTTP_409
 
             resp.location = '/%s/task/%s/' % (resp, task.id)
-        except:
+        except Exception, e:
+            self.logger.error("Error: {0}".format(e))
             resp.status = falcon.HTTP_500
         finally:
             utils.close_db_session(session)
 
         return resp
 
-    def on_get(self, req, resp, task_id=None):
+    def on_get(self, req, resp, task_id=None, session=None):
         """ Handles request/response for GET to /task
 
         Without a task id:
@@ -84,10 +98,12 @@ class TaskResource(GenericResource):
          * Returns any detail related to the task
         """
         try:
-            session = utils.create_db_session()
+            session = utils.create_db_session(
+                database=self.database, database_options=self.database_options)
             if task_id:
                 self.logger.debug("Looking for Task with id: {0}".format(task_id))
                 task = Task.find_by_id(session, task_id)
+                self.logger.debug("Found task: {0}".format(task))
                 if task:
                     resp.body = task.serialize()
                     resp.status = falcon.HTTP_200
@@ -97,13 +113,12 @@ class TaskResource(GenericResource):
                 self.logger.debug("Looking for all Tasks")
                 tasks = []
                 tasks.extend(Task.find_all(session))
-                resp.body = Task.serialize_tasks(tasks)
                 self.logger.debug("Found tasks: {0}".format(tasks))
-                if len(tasks) > 0:
-                    resp.status = falcon.HTTP_200
-                else:
-                    resp.status = falcon.HTTP_404
-        except:
+
+                resp.body = Task.serialize_tasks(tasks)
+                resp.status = falcon.HTTP_200
+        except Exception, e:
+            self.logger.error("Error: {0}".format(e))
             resp.status = falcon.HTTP_500
         finally:
             utils.close_db_session(session)
@@ -142,8 +157,9 @@ class TaskResource(GenericResource):
 
 class ResultResource(GenericResource):
 
-    def __init__(self):
-        super(ResultResource, self).__init__()
+    def __init__(self, database=None, database_options=None):
+        super(ResultResource, self).__init__(
+            database=database, database_options=database_options)
 
     def on_get(self, req, resp, result_id=None):
         """Handles GET requests"""
@@ -154,8 +170,9 @@ class ResultResource(GenericResource):
 
 class ResultDetailResource(GenericResource):
 
-    def __init__(self):
-        super(ResultDetailResource, self).__init__()
+    def __init__(self, database=None, database_options=None):
+        super(ResultDetailResource, self).__init__(
+            database=database, database_options=database_options)
 
     def on_get(self, req, resp, result_id, detail_id=None):
         """Handles GET requests"""

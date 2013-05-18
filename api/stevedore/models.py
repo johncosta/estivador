@@ -47,6 +47,8 @@ class Task(Base):
         """
         try:
             task = session.query(Task).filter_by(id=task_id).one()
+        except NoResultFound, nrf:
+            pass  # return none
         except Exception, e:
             # todo use a logger
             print e
