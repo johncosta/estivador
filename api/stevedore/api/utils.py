@@ -9,7 +9,14 @@ socket.setdefaulttimeout(30)
 def _read_stream(req, logger):
     try:
         logger.debug("Reading body...")
-        raw_json = req.stream.read(size=req.content_length)
+        logger.debug("req.stream: {0}".format(req.stream.__class__))
+        try:
+           import uwsgi
+           raw_json = req.stream.read(-1)
+        except ImportError:
+           # when not running in a uwsgi environment, the 
+           # content length should be read
+           raw_json = req.stream.read(size=req.content_length)
         logger.debug("Done reading data: {0}".format(raw_json))
     except Exception, e:
         logger.error("error: {0}".format(e))
