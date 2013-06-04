@@ -125,3 +125,53 @@ submitted_at      | epoch time UTC, when the tasks where submitted
 start             | epoch time UTC, when the tasks where started
 end               | epoch time UTC, when all the tasks where complete
 duration          | seconds of execution, end minus start
+
+============================
+Installing into a Vagrant VM
+============================
+
+Some rough notes:
+
+```
+vagrant up
+vagrant ssh
+
+sudo -i
+
+apt-get update
+apt-get install -y curl git nginx python python-dev python-virtualenv
+apt-get install -y redis-server
+
+cd /tmp
+curl -O http://python-distribute.org/distribute_setup.py
+python distribute_setup.py
+easy_install pip
+
+mkdir /var/src
+mkdir /var/src/virtualenv
+mkdir /var/src/projects
+mkdir /var/log/estivador
+
+# clone into a versioned repo, we'll symlink it later
+cd /var/src/projects
+git clone https://github.com/johncosta/estivador.git estivador-0.2
+ln -s /var/src/projects/estivador-0.2 /var/src/projects/estivador
+
+# create a versioned virtualenv, we'll symlink it it later
+cd /var/src/virtualenv
+virtualenv estivador-0.2
+ln -s /var/src/virtualenv/estivador-0.2 /var/src/virtualenv/estivador
+
+# activate and then populate your virtualenv
+source /var/src/virtualenv/estivador/bin/activate
+pip install -r /var/src/projects/estivador/api/requirements.txt
+
+ln -s /var/src/projects/estivador/api/conf/supervisor.conf /etc/supervisor/conf.d/supervisor.conf
+supervisorctl update
+
+rm /etc/nginx/sites-enabled/default
+ln -s /var/src/projects/estivador/api/conf/nginx-api.conf /etc/nginx/sites-enabled/nginx-api.conf
+/etc/init.d/nginx configtest
+/etc/init.d/nginx restart
+
+```
