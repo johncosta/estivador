@@ -72,10 +72,16 @@ class TaskResource(GenericResource):
         try:
             session = utils.create_db_session(
                 database=self.database, database_options=self.database_options)
+
             task, created = Task.create_unique_task(session, repository, name)
 
             if created:
                 resp.status = falcon.HTTP_201
+                self.q.enqueue(jobs.pull_docker_image,
+                               args=(task.id,),
+                               kwargs={
+                                   'database': self.database,
+                                   'database_options': self.database_options})
             else:
                 resp.status = falcon.HTTP_409
 

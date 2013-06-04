@@ -17,6 +17,7 @@ class Task(Base):
     id = Column(Integer, primary_key=True)
     repository = Column(String(100), nullable=True, unique=True)
     name = Column(String(100), nullable=True)
+    status = Column(String(10), nullable=True, default=constants.INIT)
 
     @classmethod
     def create_unique_task(cls, session, repository, name, task=None,
@@ -83,7 +84,13 @@ class Task(Base):
 
     def serialize(self):
         return json.dumps(dict(id=self.id, repository=self.repository,
-                               name=self.name))
+                               name=self.name, status=self.status))
+
+    def update_status(self, session, status):
+        self.status = status
+        session.add(self)
+        session.commit()
+        return
 
 
 class Result(Base):
