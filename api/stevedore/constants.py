@@ -1,4 +1,5 @@
 INIT = "init"
+PULLING = "pulling"
 QUEUED = "queued"
 RUNNING = "running"
 ERROR = "error"
