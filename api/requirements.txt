@@ -7,6 +7,7 @@ falcon==0.1.4
 redis==2.7.4
 rq==0.3.7
 SQLAlchemy==0.8.1
+uWSGI==1.9.11
 
 # for testing
-testtools==0.9.31
+testtools==0.9.30
