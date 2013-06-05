@@ -17,7 +17,7 @@ Stevedore API
 
 curl -X GET http://localhost:80/task/
 curl -X GET http://localhost:80/task/1/
-curl -v http://localhost:80/task/ --data '{"repository":"johncosta/redis"}'  # create a resource
-curl -X GET http://localhost:80/task/1/
+curl -v http://localhost:80/task/ --data '{"repository":"johncosta/fortytwo"}'  # create a resource
+curl -X GET http://localhost:80/task/2/
 
-curl http://localhost:80/task/1/ --data '{"repository":"johncosta/redis"}'   # post execution
+curl http://localhost:80/task/1/ --data '{"repository":"johncosta/fortytwo"}'   # post execution

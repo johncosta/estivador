@@ -10,12 +10,37 @@ from requests import HTTPError
 random.seed()
 
 
-def execute_worker(*args, **kwargs):
+def execute_worker(task_id, session=None, *args, **kwargs):
 
-    sleeptime = random.randint(0, 5)
-    time.sleep(sleeptime)
+    database = kwargs.pop('database', None)
+    database_options = kwargs.pop('database', None)
 
-    return sleeptime
+    try:
+        session = utils.create_db_session(
+            database=database, database_options=database_options)
+
+        task = Task.find_by_id(session, task_id)
+        if not task:
+            # todo logger
+            print "Unable to find task with id: {0}".format(task_id)
+            return
+
+        client = docker.Client()
+
+        try:
+            client.start(task.repository)
+            result = client.wait(task.repository)
+            print result
+        except HTTPError, httpe:
+            print("Error: {0}".format(httpe))
+            task.update_status(session, constants.ERROR)
+        else:
+            task.update_status(session, constants.COMPLETE)
+
+    except Exception, e:
+        print("Error: {0}".format(e))
+    finally:
+        utils.close_db_session(session)
 
 
 def pull_docker_image(task_id, session=None, *args, **kwargs):
