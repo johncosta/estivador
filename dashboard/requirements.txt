@@ -1,0 +1,2 @@
+rq-dashboard==0.3.2
+uWSGI==1.9.11
