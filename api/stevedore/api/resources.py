@@ -61,7 +61,7 @@ class TaskResource(GenericResource):
             jobs.execute_worker.__name__))
 
         for i in range(0, times):
-            self.q.enqueue(jobs.execute_worker, task_id, operation)
+            self.q.enqueue(jobs.execute_worker, task_id)
 
         return resp
 
