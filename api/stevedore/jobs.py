@@ -49,7 +49,8 @@ def pull_docker_image(task_id, session=None, *args, **kwargs):
 
         task.update_status(session, constants.PULLING)
         try:
-            client.pull(task.repository, tag=None, registry=None)
+            response = client.pull(task.repository, tag=None, registry=None)
+            print "Response: {0}".format(response) 
         except HTTPError, httpe:
             print("Error: {0}".format(httpe))
             task.update_status(session, constants.ERROR)
