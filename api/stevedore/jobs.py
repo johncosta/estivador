@@ -4,7 +4,7 @@ import docker
 
 from . import constants
 from . import utils
-from .models import Task
+from .models import Task, ResultDetail
 from requests import HTTPError
 from .utils import configure_logger
 
@@ -23,6 +23,8 @@ def execute_worker(task_id, result_id, command, session=None, *args, **kwargs):
         session = utils.create_db_session(
             database=database, database_options=database_options)
 
+        detail, created = ResultDetail.create_unique_resultdetail(session, result_id)
+
         # TODO: This will be expensive if there are a lot of workers.
         #       We should pass all the information we need
         task = Task.find_by_id(session, task_id)
@@ -32,15 +34,19 @@ def execute_worker(task_id, result_id, command, session=None, *args, **kwargs):
 
         client = docker.Client()
         try:
+            detail.update_status(session, constants.RUNNING)
             container = client.create_container(task.repository, command)
             client.start(container)
             result = client.wait(container['Id'])
             logger.debug(result)
         except HTTPError, httpe:
             logger.error("Error: {0}".format(httpe))
-            task.update_status(session, constants.ERROR)
-        else:
-            task.update_status(session, constants.COMPLETE)
+            # TODO we really want to update the status of the "result"
+            # elseware, maybe a cleanup job?
+            #task.update_status(session, constants.ERROR)
+            detail.update_status(session, constants.ERROR)
+        # else:
+        #     task.update_status(session, constants.COMPLETE)
 
     except Exception, e:
         logger.error("Error: {0}".format(e))

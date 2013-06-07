@@ -126,6 +126,13 @@ start             | epoch time UTC, when the tasks where started
 end               | epoch time UTC, when all the tasks where complete
 duration          | seconds of execution, end minus start
 
+=================
+Running the tests
+=================
+cd api
+python run_tests.py
+
+
 ============================
 Installing into a Vagrant VM
 ============================

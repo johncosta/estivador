@@ -5,8 +5,9 @@ import rq
 from .. import jobs
 from .. import config
 from .. import utils
-from ..models import Task, Result
+from ..models import Task, Result, ResultDetail
 
+from .. import constants
 from . import utils as api_utils
 
 
@@ -55,14 +56,17 @@ class TaskResource(GenericResource):
         return q
 
     def _execute_task(self, resp, task_id, command, times, operation,
-                      session=None):
+                      session=None, result_id=None):
 
+        self.logger.debug(
+            "Entering _execute_task: \ntaskid: {0}\ncommand: {1}\ntimes: {2}"
+            "\noperation: {3}".format(task_id, command, times, operation))
         if not command:
             resp.status = falcon.HTTP_400
             return resp
 
-        self.logger.debug("Queuing job: {0}".format(
-            jobs.execute_worker.__name__))
+        # self.logger.debug("Queuing job: {0}".format(
+        #     jobs.execute_worker.__name__))
 
         try:
             # create a result object
@@ -70,14 +74,18 @@ class TaskResource(GenericResource):
                 database=self.database, database_options=self.database_options)
             result, created = Result.create_unique_result(
                 session, task_id, command)
+
+            result.update_status(session, constants.RUNNING)
+            for i in range(0, times):
+                self.q.enqueue(jobs.execute_worker, task_id, result.id, command)
+            #TODO: how do we know when these tasks are complete?
+
         except Exception, e:
             self.logger.error("Error: {0}".format(e))
             resp.status = falcon.HTTP_500
         finally:
             utils.close_db_session(session)
 
-        for i in range(0, times):
-            self.q.enqueue(jobs.execute_worker, task_id, result.id, command)
         resp.status = falcon.HTTP_200
         resp.location = '/%s/task/%s/' % (resp, result.id)
 
@@ -230,3 +238,35 @@ class ResultDetailResource(GenericResource):
         self.logger.debug("get: result detail")
         resp.status = falcon.HTTP_200
         resp.body = 'Result Details!'
+
+    def on_get(self, req, resp, result_id, detail_id=None):
+        """Handles GET requests"""
+        try:
+            session = utils.create_db_session(
+                database=self.database, database_options=self.database_options)
+            if detail_id:
+                self.logger.debug(
+                    "Looking for result detail with id: {0}".format(result_id))
+                result = ResultDetail.find_by_id(session, result_id, detail_id)
+                self.logger.debug("Found result: {0}".format(result))
+                if result:
+                    resp.body = result.serialize()
+                    resp.status = falcon.HTTP_200
+                else:
+                    resp.status = falcon.HTTP_404
+            else:
+                self.logger.debug("Looking for all results")
+                result_details = []
+                result_details.extend(ResultDetail.find_all(session, result_id))
+                self.logger.debug(
+                    "Found result details: {0}".format(result_details))
+
+                resp.body = ResultDetail.serialize_results(result_details)
+                resp.status = falcon.HTTP_200
+        except Exception, e:
+            self.logger.error("Error: {0}".format(e))
+            resp.status = falcon.HTTP_500
+        finally:
+            utils.close_db_session(session)
+
+        return resp

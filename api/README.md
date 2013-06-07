@@ -28,4 +28,5 @@ curl -X GET http://localhost:8080/task/1/
 curl -v http://localhost:8080/task/ --data '{"repository":"johncosta/fortytwo"}'  # create a resource
 curl -X GET http://localhost:8080/task/1/
 
-curl http://localhost:8080/task/1/ --data '{"repository":"johncosta/fortytwo"}'   # post execution
+curl http://localhost:8080/task/1/ --data '{"repository":"johncosta/fortytwo","command":"fortytwo"}'   # post execution
+curl http://localhost:8080/result/1/

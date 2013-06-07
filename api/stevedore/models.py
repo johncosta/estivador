@@ -104,9 +104,9 @@ class Result(Base):
     status = Column(String(10), nullable=True, default=constants.INIT)
     submitted_at = Column(Integer, nullable=False, default=int(time.time()))
     start = Column(Integer, nullable=True, default=int(time.time()),
-                   onupdate=func.unix_timestamp())
+                   onupdate=int(time.time()))
     end = Column(Integer, nullable=True, default=int(time.time()),
-                 onupdate=func.unix_timestamp())
+                 onupdate=int(time.time()))
     duration = Column(Integer, nullable=True)
 
     @classmethod
@@ -182,11 +182,81 @@ class ResultDetail(Base):
     __tablename__ = 'result_detail'
 
     id = Column(Integer, primary_key=True)
-    result_id = ForeignKey(Result)
+    result_id = Column(Integer, ForeignKey('result.id'))
     status = Column(String(10), nullable=True, default=constants.INIT)
     submitted_at = Column(Integer, nullable=False, default=int(time.time()))
     start = Column(Integer, nullable=True, default=int(time.time()),
-                   onupdate=func.unix_timestamp())
+                   onupdate=int(time.time()))
     end = Column(Integer, nullable=True, default=int(time.time()),
-                 onupdate=func.unix_timestamp())
+                 onupdate=int(time.time()))
     duration = Column(Integer, nullable=True)
+
+    @classmethod
+    def serialize_results(cls, results):
+        return json.dumps([result.serialize() for result in results
+                           if isinstance(result, Result)])
+
+    def serialize(self):
+        return json.dumps(dict(id=self.id,
+                                result_id=self.result_id,
+                                status=self.status,
+                                submitted_at=self.submitted_at,
+                                start=self.start,
+                                end=self.end,
+                                duration=self.duration))
+
+    @classmethod
+    def create_unique_resultdetail(cls, session, result_id, task=None,
+                                   created=False):
+        """ Creates a task, unique by repository.
+
+        :param task_id: results task
+        :returns result:  Created Result
+        :returns created: True is a task is created, false otherwise
+        """
+        print "Creating result detail: {0}".format(result_id)
+        result_detail = ResultDetail(result_id=result_id)
+        session.add(result_detail)
+        session.commit()
+        created = True
+
+        return result_detail, created
+
+    def update_status(self, session, status):
+        self.status = status
+        session.add(self)
+        session.commit()
+        return
+
+    @classmethod
+    def find_by_id(cls, session, result_id, result_detail_id, result=None):
+        """
+        :returns task: Returns task for task_id
+        """
+        try:
+            result = session.query(ResultDetail).filter_by(
+                result_id=result_id, id=result_detail_id).one()
+        except NoResultFound, nrf:
+            pass  # return none
+        except Exception, e:
+            # todo use a logger
+            print e
+            raise e
+
+        return result
+
+    @classmethod
+    def find_all(cls, session, result_id):
+        """
+        :returns task: Returns task for task_id
+        """
+        results = []
+        try:
+            result_details = session.query(ResultDetail).filter_by(
+                result_id=result_id).all()
+        except Exception, e:
+            # todo use a logger
+            print e
+            raise e
+
+        return result_details
