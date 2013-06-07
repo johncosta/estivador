@@ -57,6 +57,9 @@ class TaskResource(GenericResource):
     def _execute_task(self, resp, task_id, command, times, operation,
                       session=None):
 
+        self.logger.debug(
+            "Entering _execute_task: \ntaskid: {0}\ncommand: {1}\ntimes: {2}"
+            "\noperation: {3}".format(task_id, command, times, operation))
         if not command:
             resp.status = falcon.HTTP_400
             return resp
