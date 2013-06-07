@@ -75,7 +75,7 @@ class TaskResource(GenericResource):
             result, created = Result.create_unique_result(
                 session, task_id, command)
 
-            result.update_status(constants.RUNNING)
+            result.update_status(session, constants.RUNNING)
             for i in range(0, times):
                 self.q.enqueue(jobs.execute_worker, task_id, result.id, command)
             #TODO: how do we know when these tasks are complete?
