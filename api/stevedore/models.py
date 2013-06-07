@@ -195,7 +195,7 @@ class ResultDetail(Base):
     @classmethod
     def serialize_results(cls, results):
         return json.dumps([result.serialize() for result in results
-                           if isinstance(result, Result)])
+                           if isinstance(result, ResultDetail)])
 
     def serialize(self):
         return json.dumps(dict(id=self.id,
