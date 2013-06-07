@@ -247,7 +247,7 @@ class ResultDetailResource(GenericResource):
             if detail_id:
                 self.logger.debug(
                     "Looking for result detail with id: {0}".format(result_id))
-                result = ResultDetail.find_by_id(session, result_id)
+                result = ResultDetail.find_by_id(session, result_id, detail_id)
                 self.logger.debug("Found result: {0}".format(result))
                 if result:
                     resp.body = result.serialize()

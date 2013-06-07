@@ -216,7 +216,7 @@ class ResultDetail(Base):
         :returns result:  Created Result
         :returns created: True is a task is created, false otherwise
         """
-        print "Creating result detail: {0}, {1}".format(result_id)
+        print "Creating result detail: {0}".format(result_id)
         result_detail = ResultDetail(result_id=result_id)
         session.add(result_detail)
         session.commit()
