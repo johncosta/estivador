@@ -5,7 +5,7 @@ import rq
 from .. import jobs
 from .. import config
 from .. import utils
-from ..models import Task, Result
+from ..models import Task, Result, ResultDetail
 
 from .. import constants
 from . import utils as api_utils
@@ -238,3 +238,35 @@ class ResultDetailResource(GenericResource):
         self.logger.debug("get: result detail")
         resp.status = falcon.HTTP_200
         resp.body = 'Result Details!'
+
+    def on_get(self, req, resp, result_id, detail_id=None):
+        """Handles GET requests"""
+        try:
+            session = utils.create_db_session(
+                database=self.database, database_options=self.database_options)
+            if detail_id:
+                self.logger.debug(
+                    "Looking for result detail with id: {0}".format(result_id))
+                result = ResultDetail.find_by_id(session, result_id)
+                self.logger.debug("Found result: {0}".format(result))
+                if result:
+                    resp.body = result.serialize()
+                    resp.status = falcon.HTTP_200
+                else:
+                    resp.status = falcon.HTTP_404
+            else:
+                self.logger.debug("Looking for all results")
+                result_details = []
+                result_details.extend(ResultDetail.find_all(session, result_id))
+                self.logger.debug(
+                    "Found result details: {0}".format(result_details))
+
+                resp.body = ResultDetail.serialize_results(result_details)
+                resp.status = falcon.HTTP_200
+        except Exception, e:
+            self.logger.error("Error: {0}".format(e))
+            resp.status = falcon.HTTP_500
+        finally:
+            utils.close_db_session(session)
+
+        return resp

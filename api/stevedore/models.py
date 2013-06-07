@@ -231,12 +231,13 @@ class ResultDetail(Base):
         return
 
     @classmethod
-    def find_by_id(cls, session, result_detail_id, result=None):
+    def find_by_id(cls, session, result_id, result_detail_id, result=None):
         """
         :returns task: Returns task for task_id
         """
         try:
-            result = session.query(ResultDetail).filter_by(id=result_detail_id).one()
+            result = session.query(ResultDetail).filter_by(
+                result_id=result_id, id=result_detail_id).one()
         except NoResultFound, nrf:
             pass  # return none
         except Exception, e:
@@ -247,13 +248,14 @@ class ResultDetail(Base):
         return result
 
     @classmethod
-    def find_all(cls, session):
+    def find_all(cls, session, result_id):
         """
         :returns task: Returns task for task_id
         """
         results = []
         try:
-            result_details = session.query(ResultDetail).all()
+            result_details = session.query(ResultDetail).filter_by(
+                result_id=result_id).all()
         except Exception, e:
             # todo use a logger
             print e
