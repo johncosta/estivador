@@ -77,7 +77,7 @@ class TaskResource(GenericResource):
 
             result.update_status(session, constants.RUNNING)
             for i in range(0, times):
-                self.logger.debug("Enqueuing task {0} for result {1}: #{3}".format(task_id, result.id, i))
+                self.logger.debug("Enqueuing task {0} for result {1}: #{2}".format(task_id, result.id, i))
                 self.q.enqueue(jobs.execute_worker, task_id, result.id, command)
             #TODO: how do we know when these tasks are complete?
 
