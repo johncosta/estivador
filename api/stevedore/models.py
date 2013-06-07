@@ -124,7 +124,8 @@ class Result(Base):
                                 submitted_at=self.submitted_at,
                                 start=self.start,
                                 end=self.end,
-                                duration=self.duration))
+                                duration=self.duration,
+                                times=self.times))
 
     @classmethod
     def create_unique_result(cls, session, task_id, command, times, task=None,
