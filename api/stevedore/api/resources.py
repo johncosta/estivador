@@ -5,7 +5,7 @@ import rq
 from .. import jobs
 from .. import config
 from .. import utils
-from ..models import Task
+from ..models import Task, Result
 
 from . import utils as api_utils
 
@@ -54,14 +54,32 @@ class TaskResource(GenericResource):
 
         return q
 
-    def _execute_task(self, resp, task_id, times, operation):
-        resp.status = falcon.HTTP_200
-        #resp.location = '/%s/things/%s' % (user_id, proper_thing.id)
+    def _execute_task(self, resp, task_id, command, times, operation,
+                      session=None):
+
+        if not command:
+            resp.status = falcon.HTTP_400
+            return resp
+
         self.logger.debug("Queuing job: {0}".format(
             jobs.execute_worker.__name__))
 
+        try:
+            # create a result object
+            session = utils.create_db_session(
+                database=self.database, database_options=self.database_options)
+            result, created = Result.create_unique_result(
+                session, task_id, command)
+        except Exception, e:
+            self.logger.error("Error: {0}".format(e))
+            resp.status = falcon.HTTP_500
+        finally:
+            utils.close_db_session(session)
+
         for i in range(0, times):
-            self.q.enqueue(jobs.execute_worker, task_id)
+            self.q.enqueue(jobs.execute_worker, task_id, result.id, command)
+        resp.status = falcon.HTTP_200
+        resp.location = '/%s/task/%s/' % (resp, result.id)
 
         return resp
 
@@ -151,10 +169,12 @@ class TaskResource(GenericResource):
         if task_id:
             operation = parsed_json.get('operation', "RUN")
             times = parsed_json.get('times', 1)
-            resp = self._execute_task(resp, task_id, times, operation)
+            command = parsed_json.get('command', None)
+            resp = self._execute_task(resp, task_id, command, times, operation)
         else:
             repository = parsed_json.get('repository', None)
             name = parsed_json.get('name', None)
+            command = parsed_json.get('command', None)
             resp = self._create_new_task(resp, repository, name)
 
         self.logger.debug("Exiting on_post")

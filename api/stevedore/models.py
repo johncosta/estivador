@@ -1,7 +1,8 @@
 import json
 import time
 
-from sqlalchemy import Column, Integer, String, ForeignKey, func
+from sqlalchemy import (
+    Column, Integer, String, ForeignKey, func, UniqueConstraint)
 from sqlalchemy.orm.exc import NoResultFound
 from sqlalchemy.ext.declarative import declarative_base
 
@@ -99,6 +100,7 @@ class Result(Base):
 
     id = Column(Integer, primary_key=True)
     task_id = ForeignKey(Task)
+    command = Column(String(100), nullable=False)
     status = Column(String(10), nullable=True, default=constants.INIT)
     submitted_at = Column(Integer, nullable=False, default=int(time.time()))
     start = Column(Integer, nullable=True, default=int(time.time()),
@@ -106,6 +108,26 @@ class Result(Base):
     end = Column(Integer, nullable=True, default=int(time.time()),
                  onupdate=func.unix_timestamp())
     duration = Column(Integer, nullable=True)
+
+    @classmethod
+    def create_unique_result(cls, session, task_id, command, task=None,
+                             created=False):
+        """ Creates a task, unique by repository.
+
+        :param task_id: results task
+        :returns result:  Created Result
+        :returns created: True is a task is created, false otherwise
+        """
+        result = Result(task_id=task_id, command=command)
+        created = True
+
+        return result, created
+
+    def update_status(self, session, status):
+        self.status = status
+        session.add(self)
+        session.commit()
+        return
 
 
 class ResultDetail(Base):

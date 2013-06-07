@@ -10,8 +10,10 @@ from requests import HTTPError
 random.seed()
 
 
-def execute_worker(task_id, session=None, *args, **kwargs):
+def execute_worker(task_id, result_id, command, session=None, *args, **kwargs):
 
+    print "Executing worker for task: {0}, result: {1}, command: {2}".format(
+        task_id, result_id, command)
     database = kwargs.pop('database', None)
     database_options = kwargs.pop('database', None)
 
@@ -19,6 +21,8 @@ def execute_worker(task_id, session=None, *args, **kwargs):
         session = utils.create_db_session(
             database=database, database_options=database_options)
 
+        # TODO: This will be expensive if there are a lot of workers.
+        #       We should pass all the information we need
         task = Task.find_by_id(session, task_id)
         if not task:
             # todo logger
@@ -26,10 +30,10 @@ def execute_worker(task_id, session=None, *args, **kwargs):
             return
 
         client = docker.Client()
-
         try:
-            client.start(task.repository)
-            result = client.wait(task.repository)
+            container = client.create_container(task.repository, command)
+            client.start(container)
+            result = client.wait(container['Id'])
             print result
         except HTTPError, httpe:
             print("Error: {0}".format(httpe))

@@ -132,6 +132,7 @@ Installing into a Vagrant VM
 
 Some rough notes:
 
+** Prepare your environment **
 ```
 vagrant up
 vagrant ssh
@@ -151,6 +152,9 @@ mkdir /var/src
 mkdir /var/src/virtualenv
 mkdir /var/src/projects
 mkdir /var/log/estivador
+```
+
+** Install the software **
 
 # clone into a versioned repo, we'll symlink it later
 cd /var/src/projects
@@ -171,6 +175,27 @@ supervisorctl update
 
 rm /etc/nginx/sites-enabled/default
 ln -s /var/src/projects/estivador/api/conf/nginx-api.conf /etc/nginx/sites-enabled/nginx-api.conf
+/etc/init.d/nginx configtest
+/etc/init.d/nginx restart
+
+```
+
+** Install the dashboard **:
+
+```
+cd /var/src/virtualenv
+virtualenv estivador-dashboard-0.2
+ln -s /var/src/virtualenv/estivador-dashboard-0.2 /var/src/virtualenv/estivador-dashboard
+
+source /var/src/virtualenv/estivador-dashboard/bin/activate
+pip install -r /var/src/projects/estivador/dashboard/requirements.txt
+
+# add the dashboard to supervisor
+ln -s /var/src/projects/estivador/dashboard/conf/supervisor.conf /etc/supervisor/conf.d/supervisor-dashboard.conf
+supervisorctl update
+
+# add nginx
+ln -s /var/src/projects/estivador/dashboard/conf/nginx.conf /etc/nginx/sites-enabled/nginx-dashboard.conf
 /etc/init.d/nginx configtest
 /etc/init.d/nginx restart
 

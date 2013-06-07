@@ -8,7 +8,7 @@ redis==2.7.4
 rq==0.3.7
 SQLAlchemy==0.8.1
 uWSGI==1.9.11
-git+https://github.com/dotcloud/docker-py
+git+https://github.com/johncosta/docker-py@more-detail-on-500
 
 # for testing
 testtools==0.9.30
