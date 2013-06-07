@@ -189,9 +189,34 @@ class ResultResource(GenericResource):
 
     def on_get(self, req, resp, result_id=None):
         """Handles GET requests"""
-        self.logger.debug("get: result")
-        resp.status = falcon.HTTP_200
-        resp.body = 'Results!'
+        try:
+            session = utils.create_db_session(
+                database=self.database, database_options=self.database_options)
+            if result_id:
+                self.logger.debug("Looking for result with id: {0}".format(
+                    result_id))
+                result = Result.find_by_id(session, result_id)
+                self.logger.debug("Found result: {0}".format(result))
+                if result:
+                    resp.body = result.serialize()
+                    resp.status = falcon.HTTP_200
+                else:
+                    resp.status = falcon.HTTP_404
+            else:
+                self.logger.debug("Looking for all Tasks")
+                results = []
+                results.extend(Result.find_all(session))
+                self.logger.debug("Found tasks: {0}".format(results))
+
+                resp.body = Result.serialize_tasks(results)
+                resp.status = falcon.HTTP_200
+        except Exception, e:
+            self.logger.error("Error: {0}".format(e))
+            resp.status = falcon.HTTP_500
+        finally:
+            utils.close_db_session(session)
+
+        return resp
 
 
 class ResultDetailResource(GenericResource):

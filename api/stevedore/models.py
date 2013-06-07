@@ -2,7 +2,7 @@ import json
 import time
 
 from sqlalchemy import (
-    Column, Integer, String, ForeignKey, func, UniqueConstraint)
+    Column, Integer, String, ForeignKey, func)
 from sqlalchemy.orm.exc import NoResultFound
 from sqlalchemy.ext.declarative import declarative_base
 
@@ -110,6 +110,18 @@ class Result(Base):
     duration = Column(Integer, nullable=True)
 
     @classmethod
+    def serialize_tasks(cls, results):
+        return json.dumps([result.serialize() for result in results
+                           if isinstance(result, Result)])
+
+    def serialize(self):
+        return json.dumps(dict(id=self.id, task_id=self.task_id,
+                               command=self.command, status=self.status,
+                               submitted_at=self.submitted_at,
+                               start=self.start, end=self.end,
+                               duration=self.duration))
+
+    @classmethod
     def create_unique_result(cls, session, task_id, command, task=None,
                              created=False):
         """ Creates a task, unique by repository.
@@ -128,6 +140,37 @@ class Result(Base):
         session.add(self)
         session.commit()
         return
+
+    @classmethod
+    def find_by_id(cls, session, result_id, task=None):
+        """
+        :returns task: Returns task for task_id
+        """
+        try:
+            result = session.query(Result).filter_by(id=result_id).one()
+        except NoResultFound, nrf:
+            pass  # return none
+        except Exception, e:
+            # todo use a logger
+            print e
+            raise e
+
+        return result
+
+    @classmethod
+    def find_all(cls, session):
+        """
+        :returns task: Returns task for task_id
+        """
+        results = []
+        try:
+            results = session.query(Result).all()
+        except Exception, e:
+            # todo use a logger
+            print e
+            raise e
+
+        return results
 
 
 class ResultDetail(Base):
