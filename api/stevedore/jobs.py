@@ -12,6 +12,7 @@ logger = configure_logger()
 
 random.seed()
 
+
 def execute_worker(task_id, result_id, command, session=None, *args, **kwargs):
 
     logger.debug("Executing worker for task: {0}, result: {1}, command: {2}".format(

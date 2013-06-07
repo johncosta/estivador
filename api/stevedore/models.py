@@ -14,6 +14,7 @@ logger = logging.getLogger(__name__)
 
 Base = declarative_base()
 
+
 class Task(Base):
 
     __tablename__ = 'task'
@@ -214,7 +215,7 @@ class ResultDetail(Base):
         :returns result:  Created Result
         :returns created: True is a task is created, false otherwise
         """
-        print "Creating result detail: {0}".format(result_id)
+        logger.debug("Creating result detail for result: {0}".format(result_id))
         result_detail = ResultDetail(result_id=result_id)
         session.add(result_detail)
         session.commit()
@@ -239,8 +240,7 @@ class ResultDetail(Base):
         except NoResultFound, nrf:
             pass  # return none
         except Exception, e:
-            # todo use a logger
-            print e
+            logger.error(e)
             raise e
 
         return result
@@ -255,8 +255,7 @@ class ResultDetail(Base):
             result_details = session.query(ResultDetail).filter_by(
                 result_id=result_id).all()
         except Exception, e:
-            # todo use a logger
-            print e
+            logger.error(e)
             raise e
 
         return result_details
