@@ -55,7 +55,7 @@ class TaskResource(GenericResource):
         return q
 
     def _execute_task(self, resp, task_id, command, times, operation,
-                      session=None):
+                      session=None, result_id=None):
 
         self.logger.debug(
             "Entering _execute_task: \ntaskid: {0}\ncommand: {1}\ntimes: {2}"
@@ -64,8 +64,8 @@ class TaskResource(GenericResource):
             resp.status = falcon.HTTP_400
             return resp
 
-        self.logger.debug("Queuing job: {0}".format(
-            jobs.execute_worker.__name__))
+        # self.logger.debug("Queuing job: {0}".format(
+        #     jobs.execute_worker.__name__))
 
         try:
             # create a result object
@@ -73,14 +73,16 @@ class TaskResource(GenericResource):
                 database=self.database, database_options=self.database_options)
             result, created = Result.create_unique_result(
                 session, task_id, command)
+
+            for i in range(0, times):
+                self.q.enqueue(jobs.execute_worker, task_id, result.id, command)
+
         except Exception, e:
             self.logger.error("Error: {0}".format(e))
             resp.status = falcon.HTTP_500
         finally:
             utils.close_db_session(session)
 
-        for i in range(0, times):
-            self.q.enqueue(jobs.execute_worker, task_id, result.id, command)
         resp.status = falcon.HTTP_200
         resp.location = '/%s/task/%s/' % (resp, result.id)
 
