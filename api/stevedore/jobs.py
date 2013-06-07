@@ -21,7 +21,7 @@ def execute_worker(task_id, result_id, command, session=None, *args, **kwargs):
         session = utils.create_db_session(
             database=database, database_options=database_options)
 
-        detail = ResultDetail.create_unique_resultdetail(session, result_id)
+        detail, created = ResultDetail.create_unique_resultdetail(session, result_id)
 
         # TODO: This will be expensive if there are a lot of workers.
         #       We should pass all the information we need
