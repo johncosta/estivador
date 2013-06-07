@@ -1,5 +1,10 @@
 language: python
 python:
   - "2.7"
-install: "pip install -r api/requirements.txt"
-script: python api/run_tests.py
+install:
+  - pip install -r api/requirements.txt
+  - pip install coveralls
+script:
+  - coverage run --source=stevedore python api/run_tests.py
+after_success:
+  - coveralls
