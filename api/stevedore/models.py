@@ -109,6 +109,7 @@ class Result(Base):
     id = Column(Integer, primary_key=True)
     task_id = Column(Integer, ForeignKey('task.id'))
     command = Column(String(100), nullable=False)
+    times = Column(Integer)
     status = Column(String(10), nullable=True, default=constants.INIT)
     submitted_at = Column(Integer, nullable=False, default=int(time.time()))
     start = Column(Integer, nullable=True, default=int(time.time()),
@@ -133,7 +134,7 @@ class Result(Base):
                                 duration=self.duration))
 
     @classmethod
-    def create_unique_result(cls, session, task_id, command, task=None,
+    def create_unique_result(cls, session, task_id, command, times, task=None,
                              created=False):
         """ Creates a task, unique by repository.
 
@@ -142,7 +143,7 @@ class Result(Base):
         :returns created: True is a task is created, false otherwise
         """
         logger.debug("Creating result: {0}, {1}".format(task_id, command))
-        result = Result(task_id=task_id, command=command)
+        result = Result(task_id=task_id, command=command, times=times)
         session.add(result)
         session.commit()
         created = True

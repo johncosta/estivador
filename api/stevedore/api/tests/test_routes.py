@@ -71,7 +71,7 @@ class ResultRoutingFixture(testing.TestBase):
         task, created = Task.create_unique_task(
              session, "sampletask", "sampletask")
         result, created = Result.create_unique_result(
-             session, task.id, 'command')
+             session, task.id, 'command', 1)
         utils.close_db_session(session)
 
     def test_get(self):
@@ -102,7 +102,7 @@ class ResultDetailRoutingFixture(testing.TestBase):
         task, created = Task.create_unique_task(
              session, "sampletask", "sampletask")
         result, created = Result.create_unique_result(
-             session, task.id, 'command')
+             session, task.id, 'command', 1)
         resultdetail, created = ResultDetail.create_unique_resultdetail(
              session, result.id)
         utils.close_db_session(session)

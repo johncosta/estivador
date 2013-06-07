@@ -73,7 +73,7 @@ class TaskResource(GenericResource):
             session = utils.create_db_session(
                 database=self.database, database_options=self.database_options)
             result, created = Result.create_unique_result(
-                session, task_id, command)
+                session, task_id, command, times)
 
             result.update_status(session, constants.RUNNING)
             for i in range(0, times):
