@@ -9,7 +9,7 @@ LOGGING_FORMAT = '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
 DEFAULT_LOG_LEVEL = logging.DEBUG
 
 
-def configure_logger(cls, log_level=None, stream_handling=True):
+def configure_logger(cls=None, log_level=None, stream_handling=True):
     """ Takes a python class and returns a logger for that class. Convenience
     method.
 

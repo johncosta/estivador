@@ -6,14 +6,16 @@ from . import constants
 from . import utils
 from .models import Task, ResultDetail
 from requests import HTTPError
+from .utils import configure_logger
+
+logger = configure_logger()
 
 random.seed()
 
-
 def execute_worker(task_id, result_id, command, session=None, *args, **kwargs):
 
-    print "Executing worker for task: {0}, result: {1}, command: {2}".format(
-        task_id, result_id, command)
+    logger.debug("Executing worker for task: {0}, result: {1}, command: {2}".format(
+        task_id, result_id, command))
     database = kwargs.pop('database', None)
     database_options = kwargs.pop('database', None)
 
@@ -27,8 +29,7 @@ def execute_worker(task_id, result_id, command, session=None, *args, **kwargs):
         #       We should pass all the information we need
         task = Task.find_by_id(session, task_id)
         if not task:
-            # todo logger
-            print "Unable to find task with id: {0}".format(task_id)
+            logger.debug("Unable to find task with id: {0}".format(task_id))
             return
 
         client = docker.Client()
@@ -37,10 +38,9 @@ def execute_worker(task_id, result_id, command, session=None, *args, **kwargs):
             container = client.create_container(task.repository, command)
             client.start(container)
             result = client.wait(container['Id'])
-            detail.update_status(session, constants.COMPLETE)
-            print result
+            logger.debug(result)
         except HTTPError, httpe:
-            print("Error: {0}".format(httpe))
+            logger.error("Error: {0}".format(httpe))
             # TODO we really want to update the status of the "result"
             # elseware, maybe a cleanup job?
             #task.update_status(session, constants.ERROR)
@@ -49,7 +49,7 @@ def execute_worker(task_id, result_id, command, session=None, *args, **kwargs):
         #     task.update_status(session, constants.COMPLETE)
 
     except Exception, e:
-        print("Error: {0}".format(e))
+        logger.error("Error: {0}".format(e))
     finally:
         utils.close_db_session(session)
 
@@ -77,8 +77,7 @@ def pull_docker_image(task_id, session=None, *args, **kwargs):
 
         task = Task.find_by_id(session, task_id)
         if not task:
-            # todo logger
-            print "Unable to find task with id: {0}".format(task_id)
+            logger.debug("Unable to find task with id: {0}".format(task_id))
             return
 
         client = docker.Client()
@@ -86,14 +85,14 @@ def pull_docker_image(task_id, session=None, *args, **kwargs):
         task.update_status(session, constants.PULLING)
         try:
             response = client.pull(task.repository, tag=None, registry=None)
-            print "Response: {0}".format(response) 
+            logger.debug("Response: {0}".format(response))
         except HTTPError, httpe:
-            print("Error: {0}".format(httpe))
+            logger.error("Error: {0}".format(httpe))
             task.update_status(session, constants.ERROR)
         else:
             task.update_status(session, constants.COMPLETE)
 
     except Exception, e:
-        print("Error: {0}".format(e))
+        logger.error("Error: {0}".format(e))
     finally:
         utils.close_db_session(session)

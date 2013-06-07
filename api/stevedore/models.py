@@ -1,5 +1,6 @@
 import json
 import time
+import logging
 
 from sqlalchemy import (
     Column, Integer, String, ForeignKey, func)
@@ -8,8 +9,10 @@ from sqlalchemy.ext.declarative import declarative_base
 
 from . import constants
 
-Base = declarative_base()
+# can't use .utils.configure_logger due to cyclical imports
+logger = logging.getLogger(__name__)
 
+Base = declarative_base()
 
 class Task(Base):
 
@@ -36,8 +39,7 @@ class Task(Base):
             session.commit()
             created = True
         except Exception, e:
-            # todo use a logger
-            print e
+            logger.error(e)
             raise e
 
         return task, created
@@ -52,8 +54,7 @@ class Task(Base):
         except NoResultFound, nrf:
             pass  # return none
         except Exception, e:
-            # todo use a logger
-            print e
+            logger.error(e)
             raise e
 
         return task
@@ -67,8 +68,7 @@ class Task(Base):
         try:
             tasks = session.query(Task).all()
         except Exception, e:
-            # todo use a logger
-            print e
+            logger.error(e)
             raise e
 
         return tasks
@@ -133,7 +133,7 @@ class Result(Base):
         :returns result:  Created Result
         :returns created: True is a task is created, false otherwise
         """
-        print "Creating result: {0}, {1}".format(task_id, command)
+        logger.debug("Creating result: {0}, {1}".format(task_id, command))
         result = Result(task_id=task_id, command=command)
         session.add(result)
         session.commit()
@@ -157,8 +157,7 @@ class Result(Base):
         except NoResultFound, nrf:
             pass  # return none
         except Exception, e:
-            # todo use a logger
-            print e
+            logger.error(e)
             raise e
 
         return result
@@ -172,8 +171,7 @@ class Result(Base):
         try:
             results = session.query(Result).all()
         except Exception, e:
-            # todo use a logger
-            print e
+            logger.error(e)
             raise e
 
         return results
