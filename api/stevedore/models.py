@@ -99,7 +99,7 @@ class Result(Base):
     __tablename__ = 'result'
 
     id = Column(Integer, primary_key=True)
-    task_id = ForeignKey(Task)
+    task_id = Column(Integer, ForeignKey('task.id'))
     command = Column(String(100), nullable=False)
     status = Column(String(10), nullable=True, default=constants.INIT)
     submitted_at = Column(Integer, nullable=False, default=int(time.time()))
@@ -110,16 +110,19 @@ class Result(Base):
     duration = Column(Integer, nullable=True)
 
     @classmethod
-    def serialize_tasks(cls, results):
+    def serialize_results(cls, results):
         return json.dumps([result.serialize() for result in results
                            if isinstance(result, Result)])
 
     def serialize(self):
-        return json.dumps(dict(id=self.id, task_id=self.task_id,
-                               command=self.command, status=self.status,
-                               submitted_at=self.submitted_at,
-                               start=self.start, end=self.end,
-                               duration=self.duration))
+        return json.dumps(dict(id=self.id,
+                                task_id=self.task_id,
+                                command=self.command,
+                                status=self.status,
+                                submitted_at=self.submitted_at,
+                                start=self.start,
+                                end=self.end,
+                                duration=self.duration))
 
     @classmethod
     def create_unique_result(cls, session, task_id, command, task=None,
@@ -130,7 +133,10 @@ class Result(Base):
         :returns result:  Created Result
         :returns created: True is a task is created, false otherwise
         """
+        print "Creating result: {0}, {1}".format(task_id, command)
         result = Result(task_id=task_id, command=command)
+        session.add(result)
+        session.commit()
         created = True
 
         return result, created
@@ -142,7 +148,7 @@ class Result(Base):
         return
 
     @classmethod
-    def find_by_id(cls, session, result_id, task=None):
+    def find_by_id(cls, session, result_id, result=None):
         """
         :returns task: Returns task for task_id
         """

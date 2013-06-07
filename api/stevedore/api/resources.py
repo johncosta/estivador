@@ -203,12 +203,12 @@ class ResultResource(GenericResource):
                 else:
                     resp.status = falcon.HTTP_404
             else:
-                self.logger.debug("Looking for all Tasks")
+                self.logger.debug("Looking for all results")
                 results = []
                 results.extend(Result.find_all(session))
-                self.logger.debug("Found tasks: {0}".format(results))
+                self.logger.debug("Found results: {0}".format(results))
 
-                resp.body = Result.serialize_tasks(results)
+                resp.body = Result.serialize_results(results)
                 resp.status = falcon.HTTP_200
         except Exception, e:
             self.logger.error("Error: {0}".format(e))

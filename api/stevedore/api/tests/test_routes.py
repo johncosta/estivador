@@ -3,7 +3,7 @@ import falcon.testing as testing
 
 from helpers import (
     TestTaskResource, TestResultResource, TestResultDetailResource)
-from stevedore.models import Task
+from stevedore.models import Task, Result
 from stevedore import utils, config
 
 """
@@ -64,6 +64,14 @@ class ResultRoutingFixture(testing.TestBase):
             database=self.database, database_options=self.database_options)
         self.api.add_route('/result/', self.resource_result)
         self.api.add_route('/result/{result_id}/', self.resource_result)
+
+        session = utils.create_db_session(
+            database=self.database, database_options=self.database_options)
+        task, created = Task.create_unique_task(
+             session, "sampletask", "sampletask")
+        result, created = Result.create_unique_result(
+             session, task.id, 'command')
+        utils.close_db_session(session)
 
     def test_get(self):
         self.response = self.simulate_request('/result/')
