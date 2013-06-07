@@ -7,6 +7,7 @@ from .. import config
 from .. import utils
 from ..models import Task, Result
 
+from .. import constants
 from . import utils as api_utils
 
 
@@ -74,8 +75,10 @@ class TaskResource(GenericResource):
             result, created = Result.create_unique_result(
                 session, task_id, command)
 
+            result.update_status(constants.RUNNING)
             for i in range(0, times):
                 self.q.enqueue(jobs.execute_worker, task_id, result.id, command)
+            #TODO: how do we know when these tasks are complete?
 
         except Exception, e:
             self.logger.error("Error: {0}".format(e))
