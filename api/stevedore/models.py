@@ -104,9 +104,9 @@ class Result(Base):
     status = Column(String(10), nullable=True, default=constants.INIT)
     submitted_at = Column(Integer, nullable=False, default=int(time.time()))
     start = Column(Integer, nullable=True, default=int(time.time()),
-                   onupdate=func.unix_timestamp())
+                   onupdate=int(time.time()))
     end = Column(Integer, nullable=True, default=int(time.time()),
-                 onupdate=func.unix_timestamp())
+                 onupdate=int(time.time()))
     duration = Column(Integer, nullable=True)
 
     @classmethod
@@ -188,9 +188,9 @@ class ResultDetail(Base):
     status = Column(String(10), nullable=True, default=constants.INIT)
     submitted_at = Column(Integer, nullable=False, default=int(time.time()))
     start = Column(Integer, nullable=True, default=int(time.time()),
-                   onupdate=func.unix_timestamp())
+                   onupdate=int(time.time()))
     end = Column(Integer, nullable=True, default=int(time.time()),
-                 onupdate=func.unix_timestamp())
+                 onupdate=int(time.time()))
     duration = Column(Integer, nullable=True)
 
     @classmethod
