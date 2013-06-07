@@ -90,6 +90,13 @@ class Task(Base):
 
     def update_status(self, session, status):
         self.status = status
+        # set the start/end times explicitly
+        #   we can't count on onupdate
+        if status == constants.RUNNING:
+            self.start = int(time.time())
+        if status in (constants.COMPLETE or constants.ERROR):
+            self.end = int(time.time())
+            self.duration = self.end - self.start
         session.add(self)
         session.commit()
         return
@@ -144,6 +151,13 @@ class Result(Base):
 
     def update_status(self, session, status):
         self.status = status
+        # set the start/end times explicitly
+        #   we can't count on onupdate
+        if status == constants.RUNNING:
+            self.start = int(time.time())
+        if status in (constants.COMPLETE or constants.ERROR):
+            self.end = int(time.time())
+            self.duration = self.end - self.start
         session.add(self)
         session.commit()
         return
@@ -225,6 +239,13 @@ class ResultDetail(Base):
 
     def update_status(self, session, status):
         self.status = status
+        # set the start/end times explicitly
+        #   we can't count on onupdate
+        if status == constants.RUNNING:
+            self.start = int(time.time())
+        if status in (constants.COMPLETE or constants.ERROR):
+            self.end = int(time.time())
+            self.duration = self.end - self.start
         session.add(self)
         session.commit()
         return
