@@ -39,6 +39,7 @@ def execute_worker(task_id, result_id, command, session=None, *args, **kwargs):
             container = client.create_container(task.repository, command)
             client.start(container['Id'])
             result = client.wait(container['Id'])
+            detail.update_status(session, constants.COMPLETE)
             logger.debug(result)
         except HTTPError, httpe:
             logger.error("Error: {0}".format(httpe))
