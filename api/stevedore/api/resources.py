@@ -235,12 +235,6 @@ class ResultDetailResource(GenericResource):
 
     def on_get(self, req, resp, result_id, detail_id=None):
         """Handles GET requests"""
-        self.logger.debug("get: result detail")
-        resp.status = falcon.HTTP_200
-        resp.body = 'Result Details!'
-
-    def on_get(self, req, resp, result_id, detail_id=None):
-        """Handles GET requests"""
         try:
             session = utils.create_db_session(
                 database=self.database, database_options=self.database_options)
