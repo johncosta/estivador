@@ -1,6 +1,6 @@
 Estivador
 =========
-[![Build](https://travis-ci.org/johncosta/estivador.png)](https://travis-ci.org/johncosta/estivador) [![Coverage](https://coveralls.io/repos/johncosta/estivador/badge.png?branch=master)](https://coveralls.io/repos/johncosta/estivador/)
+[![Build](https://travis-ci.org/johncosta/estivador.png)](https://travis-ci.org/johncosta/estivador) [![Coverage](https://coveralls.io/repos/johncosta/estivador/badge.png?branch=master)](https://coveralls.io/r/johncosta/estivador/)
 
 The intent behind this project is to create an easy to use interface for
 running arbitrary and presumably long running distributed tasks (or jobs).  It
