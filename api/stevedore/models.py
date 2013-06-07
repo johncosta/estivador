@@ -215,7 +215,7 @@ class ResultDetail(Base):
         :returns result:  Created Result
         :returns created: True is a task is created, false otherwise
         """
-        logger.debug("Creating result detail: {0}".format(result_id))
+        logger.debug("Creating result detail for result: {0}".format(result_id))
         result_detail = ResultDetail(result_id=result_id)
         session.add(result_detail)
         session.commit()
